@@ -1,6 +1,6 @@
-from typing import Union, List
+from typing import Union, List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 
 from rdp.sensor import Reader
 from rdp.crud import create_engine, Crud
@@ -112,3 +112,20 @@ async def shutdown_event():
     logger.debug("SHUTDOWN: Sensor reader!")
     reader.stop()
     logger.info("SHUTDOWN: Sensor reader completed!")
+
+@app.post("/device/")
+def create_device(device: ApiTypes.DeviceCreate) -> ApiTypes.Device:
+    global crud
+    created_device = crud.add_device(name=device.name, device_type=device.device_type)
+    return ApiTypes.Device(id=created_device.id, name=created_device.name, device_type=created_device.device_type)
+
+
+@app.get("/devices/", response_model=List[ApiTypes.Device])
+def read_all_devices():
+    """Endpoint to retrieve all registered devices.
+
+    Returns:
+        List[ApiTypes.Device]: A list of all devices.
+    """
+    devices = crud.get_all_devices()
+    return devices

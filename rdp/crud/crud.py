@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
-from .model import Base, Value, ValueType
+from .model import Base, Value, ValueType, Device
 
 
 class Crud:
@@ -51,26 +51,25 @@ class Crud:
             session.commit()
             return db_type
 
-    def add_value(self, value_time: int, value_type: int, value_value: float) -> None:
-        """Add a measurement point to the database.
+    def add_value(self, value_time: int, value_type: int, value_value: float, device_id: int) -> None:
+            """Add a measurement point to the database.
 
-        Args:
-            value_time (int): unix time stamp of the value.
-            value_type (int): Valuetype id of the given value. 
-            value_value (float): The measurement value as float.
-        """        
-        with Session(self._engine) as session:
-            stmt = select(ValueType).where(ValueType.id == value_type)
-            db_type = self.add_or_update_value_type(value_type)
-            db_value = Value(time=value_time, value=value_value, value_type=db_type)
+            Args:
+                value_time (int): unix time stamp of the value.
+                value_type (int): Valuetype id of the given value. 
+                value_value (float): The measurement value as float.
+            """        
+            with Session(self._engine) as session:
+                stmt = select(ValueType).where(ValueType.id == value_type)
+                db_type = self.add_or_update_value_type(value_type)
+                db_value = Value(time=value_time, value=value_value, value_type=db_type, device_id=device_id)
 
-            session.add_all([db_type, db_value])
-            try:
-                session.commit()
-            except IntegrityError:
-                logging.error("Integrity")
-                raise
-
+                session.add_all([db_type, db_value])
+                try:
+                    session.commit()
+                except IntegrityError:
+                    logging.error("Integrity")
+                    raise
     def get_value_types(self) -> List[ValueType]:
         """Get all configured value types
 
@@ -122,3 +121,22 @@ class Crud:
             logging.error(stmt)
 
             return session.scalars(stmt).all()
+
+    def add_device(self, name: str, device_type: str) -> Device:
+        with Session(self._engine) as session:
+            device = Device(name=name, device_type=device_type)
+            session.add(device)
+            session.commit()
+            session.refresh(device)
+            return device
+
+    def get_all_devices(self) -> List[Device]:
+        """Retrieve all registered devices.
+
+        Returns:
+            List[Device]: A list of all devices.
+        """
+        with Session(self._engine) as session:
+            stmt = select(Device)
+            return session.scalars(stmt).all()
+
