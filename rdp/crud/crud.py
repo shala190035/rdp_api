@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
-from .model import Base, Value, ValueType, Device
+from .model import Base, Value, ValueType, Device, Location
 
 
 class Crud:
@@ -122,9 +122,9 @@ class Crud:
 
             return session.scalars(stmt).all()
 
-    def add_device(self, name: str, device_type: str) -> Device:
+    def add_device(self, name: str, device_type: str, location_id: int) -> Device:
         with Session(self._engine) as session:
-            device = Device(name=name, device_type=device_type)
+            device = Device(name=name, device_type=device_type, location_id=location_id)
             session.add(device)
             session.commit()
             session.refresh(device)
@@ -152,4 +152,31 @@ class Crud:
             else:
                 raise ValueError("Either device_id or device_name must be provided")
             
+            return session.scalars(stmt).all()
+
+    def add_location(self, name: str, description: str) -> Location:
+        """Fügt eine neue Location hinzu.
+
+        Args:
+            name (str): Der Name der Location.
+            description (str): Die Beschreibung der Location.
+
+        Returns:
+            Location: Das neu hinzugefügte Location-Objekt.
+        """
+        with Session(self._engine) as session:
+            location = Location(name=name, description=description)
+            session.add(location)
+            session.commit()
+            session.refresh(location)
+            return location
+
+    def get_all_locations(self) -> List[Location]:
+        """Ruft alle Locations ab.
+
+        Returns:
+            List[Location]: Eine Liste aller Location-Objekte.
+        """
+        with Session(self._engine) as session:
+            stmt = select(Location)
             return session.scalars(stmt).all()

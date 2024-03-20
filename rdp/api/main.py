@@ -114,10 +114,10 @@ async def shutdown_event():
     logger.info("SHUTDOWN: Sensor reader completed!")
 
 @app.post("/device/")
-def create_device(device: ApiTypes.DeviceCreate) -> ApiTypes.Device:
+def create_device(device: ApiTypes.DeviceCreate, location_id: int) -> ApiTypes.Device:
     global crud
-    created_device = crud.add_device(name=device.name, device_type=device.device_type)
-    return ApiTypes.Device(id=created_device.id, name=created_device.name, device_type=created_device.device_type)
+    created_device = crud.add_device(name=device.name, device_type=device.device_type, location_id=location_id)
+    return ApiTypes.Device(id=created_device.id, name=created_device.name, device_type=created_device.device_type, location_id=created_device.location_id)
 
 
 @app.get("/devices/", response_model=List[ApiTypes.Device])
@@ -141,3 +141,28 @@ def read_values_by_device(device_id: Optional[int] = None, device_name: Optional
         raise HTTPException(status_code=404, detail="Device not found or no values for this device")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/location/")
+def create_location(location: ApiTypes.LocationCreate) -> ApiTypes.Location:
+    """Endpoint zum Erstellen einer neuen Location.
+
+    Args:
+        location (ApiTypes.LocationCreate): Das Location-Objekt, das erstellt werden soll.
+
+    Returns:
+        ApiTypes.Location: Das erstellte Location-Objekt.
+    """
+    global crud
+    created_location = crud.add_location(name=location.name, description=location.description)
+    return ApiTypes.Location(id=created_location.id, name=created_location.name, description=created_location.description)
+
+@app.get("/locations/", response_model=List[ApiTypes.Location])
+def read_all_locations():
+    """Endpoint, um alle Locations abzurufen.
+
+    Returns:
+        List[ApiTypes.Location]: Eine Liste aller Locations.
+    """
+    global crud
+    locations = crud.get_all_locations()
+    return locations

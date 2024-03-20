@@ -32,7 +32,14 @@ class ApiDescription(BaseModel):
 class DeviceCreate(BaseModel):
     name: str
     device_type: str
-
+    location_id: int
 
 class Device(DeviceCreate):
+    id: int
+
+class LocationCreate(BaseModel):
+    name: str
+    description: str
+
+class Location(LocationCreate):
     id: int
