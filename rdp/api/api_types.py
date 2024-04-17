@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional, List
 
 
 # Vorhandene Modelle
@@ -43,3 +44,9 @@ class LocationCreate(BaseModel):
 
 class Location(LocationCreate):
     id: int
+
+class ValueCreate(BaseModel):
+    value_time: int
+    value_type_id: int
+    value: float
+    device_id: Optional[int]

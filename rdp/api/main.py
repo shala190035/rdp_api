@@ -1,7 +1,7 @@
 from typing import Union, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query
-
+from .api_types import ValueCreate
 from rdp.sensor import Reader
 from rdp.crud import create_engine, Crud
 from . import api_types as ApiTypes
@@ -166,3 +166,19 @@ def read_all_locations():
     global crud
     locations = crud.get_all_locations()
     return locations
+
+@app.post("/value/", status_code=201)
+def create_value(value_data: ValueCreate):
+    """Endpoint to add a value to the database.
+    Args:
+        value_data (ValueCreate): The data needed to create a new value.
+    Raises:
+        HTTPException: If an error occurs during database insertion.
+    """
+    try:
+        crud.add_value(value_time=value_data.value_time, value_type=value_data.value_type_id, 
+                       value_value=value_data.value, device_id=value_data.device_id)
+        return {"message": "Value added successfully"}
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
