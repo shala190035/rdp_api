@@ -6,6 +6,7 @@ from rdp.sensor import Reader
 from rdp.crud import create_engine, Crud
 from . import api_types as ApiTypes
 import logging
+import random
 
 logger = logging.getLogger("rdp.api")
 app = FastAPI()
@@ -117,6 +118,23 @@ def get_first_value_by_type(type_id:int=None, start:int=None, end:int=None) -> f
             raise HTTPException(status_code=404, detail="No values found")
         value_first = values[0].value  # Extract the 'value' field from each item
         return value_first
+    except Exception as e:
+        logger.error(f"Error calculating average value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+
+@app.get("/random_value_by_type/")
+def get_random_value_by_type(type_id:int=None, start:int=None, end:int=None) -> float:
+
+    global crud
+    try:
+        values = crud.get_values(type_id, start, end)
+        if not values:
+            raise HTTPException(status_code=404, detail="No values found")
+        value_random_object = random.choice(values)  # Extract the 'value' field from each item
+        value_random = value_random_object.value
+        return value_random
     except Exception as e:
         logger.error(f"Error calculating average value: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
