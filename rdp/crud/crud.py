@@ -154,6 +154,23 @@ class Crud:
             
             return session.scalars(stmt).all()
 
+    def get_avg_values_by_type(
+        self, value_type_id: int = None, start: int = None, end: int = None
+    ) -> List[Value]:
+        with Session(self._engine) as session:
+            stmt = select(Value)
+            if value_type_id is not None:
+                stmt = stmt.join(Value.value_type).where(ValueType.id == value_type_id)
+            if start is not None:
+                stmt = stmt.where(Value.time >= start)
+            if end is not None:
+                stmt = stmt.where(Value.time <= end)
+            stmt = stmt.order_by(Value.time)
+            logging.error(start)
+            logging.error(stmt)
+
+            return session.scalars(stmt).all()
+
     def add_location(self, name: str, description: str) -> Location:
         """Fügt eine neue Location hinzu.
 

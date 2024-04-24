@@ -92,6 +92,22 @@ def get_values(type_id:int=None, start:int=None, end:int=None) -> List[ApiTypes.
     except crud.NoResultFound:
         raise HTTPException(status_code=404, deltail="Item not found")
 
+@app.get("/value_avg_by_type/")
+def get_avg_values_by_type(type_id:int=None, start:int=None, end:int=None) -> float:
+
+    global crud
+    try:
+        values = crud.get_values(type_id, start, end)
+        if not values:
+            raise HTTPException(status_code=404, detail="No values found")
+        value_sum = sum(items.value for items in values)  # Extract the 'value' field from each item
+        average_value = value_sum/len(values)
+        return average_value
+    except Exception as e:
+        logger.error(f"Error calculating average value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
 @app.on_event("startup")
 async def startup_event() -> None:
     """start the character device reader
