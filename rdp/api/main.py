@@ -184,6 +184,21 @@ def get_median(type_id:int=None, start:int=None, end:int=None) -> float:
         logger.error(f"Error calculating average value: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@app.get("/sort_lowhigh/")
+def get_high_low(type_id:int=None, start:int=None, end:int=None) -> list:
+
+    global crud
+    try:
+        values = crud.get_values(type_id, start, end)
+        if not values:
+            raise HTTPException(status_code=404, detail="No values found")
+        value_sort = [items.value for items in values]
+        value_sort.sort(reverse=True)
+        return value_sort
+    except Exception as e:
+        logger.error(f"Error calculating average value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 
 @app.on_event("startup")
 async def startup_event() -> None:
