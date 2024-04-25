@@ -7,6 +7,7 @@ from rdp.crud import create_engine, Crud
 from . import api_types as ApiTypes
 import logging
 import random
+import statistics
 
 logger = logging.getLogger("rdp.api")
 app = FastAPI()
@@ -135,6 +136,50 @@ def get_random_value_by_type(type_id:int=None, start:int=None, end:int=None) -> 
         value_random_object = random.choice(values)  # Extract the 'value' field from each item
         value_random = value_random_object.value
         return value_random
+    except Exception as e:
+        logger.error(f"Error calculating average value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.get("/max_min_value/")
+def get_max_min_value(type_id:int=None, start:int=None, end:int=None) -> list:
+
+    global crud
+    try:
+        values = crud.get_values(type_id, start, end)
+        if not values:
+            raise HTTPException(status_code=404, detail="No values found")
+        value_max = max(items.value for items in values)
+        value_min = min(items.value for items in values)
+        return [value_max, value_min]
+    except Exception as e:
+        logger.error(f"Error calculating average value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.get("/last_10/")
+def get_last_10(type_id:int=None, start:int=None, end:int=None) -> list:
+
+    global crud
+    try:
+        values = crud.get_values(type_id, start, end)
+        if not values:
+            raise HTTPException(status_code=404, detail="No values found")
+        first_ten_val = values[-10:]
+        first_ten_values_only = [items.value for items in first_ten_val]
+        return first_ten_values_only
+    except Exception as e:
+        logger.error(f"Error calculating average value: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.get("/median/")
+def get_median(type_id:int=None, start:int=None, end:int=None) -> float:
+
+    global crud
+    try:
+        values = crud.get_values(type_id, start, end)
+        if not values:
+            raise HTTPException(status_code=404, detail="No values found")
+        value_median = statistics.median(items.value for items in values)
+        return value_median
     except Exception as e:
         logger.error(f"Error calculating average value: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
