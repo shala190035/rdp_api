@@ -70,6 +70,7 @@ class Crud:
                 except IntegrityError:
                     logging.error("Integrity")
                     raise
+
     def get_value_types(self) -> List[ValueType]:
         """Get all configured value types
 
