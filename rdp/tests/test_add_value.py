@@ -9,8 +9,8 @@ engine = create_engine(DB_URL)
 def test_add_value(database_session):
     # Pass the engine, not the session, to the Crud constructor
     crud = Crud(engine)
-    crud.add_or_update_value_type(value_type_id=1, value_type_name="Test Type", value_type_unit="Test Unit")
-    crud.add_value(value_time=123456, value_type=1, value_value=42.0)
+    crud.add_or_update_value_type(value_type_id=1, value_type_name="Test Type", value_type_unit="Test Unit", )
+    crud.add_value(value_time=123456, value_type=1, value_value=42.0, device_id=1)
 
     values = crud.get_values(value_type_id=1)
 

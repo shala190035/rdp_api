@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, delete, update
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
@@ -155,6 +155,12 @@ class Crud:
             
             return session.scalars(stmt).all()
 
+    def get_device_by_id(self, id:int):
+        with Session(self._engine) as session:
+            stmt = select(Device).where(Device.id == id)
+            return session.scalars(stmt).all()
+
+
     def add_location(self, name: str, description: str) -> Location:
         """Fügt eine neue Location hinzu.
 
@@ -181,3 +187,45 @@ class Crud:
         with Session(self._engine) as session:
             stmt = select(Location)
             return session.scalars(stmt).all()
+    
+    def delete_by_id(self, id:int):
+        with Session(self._engine) as session:
+                entry = session.query(Value).get(id)
+                if entry != None:
+                    session.delete(entry)
+                    session.commit()
+                    return True
+                return False
+                
+    def delete_by_id_2(self, id:int):
+        with Session(self._engine) as session:
+            stmt = delete(Value).where(Value.id == id)
+            session.execute(stmt)
+            session.commit()
+    
+    def delete_by_time(self, timestamp:int):
+        with Session(self._engine) as session:
+            stmt = delete(Value).where(Value.time == timestamp)
+            session.execute(stmt)
+            session.commit()
+
+    def delete_by_time_type(self, timestamp:int, valuetype:int):
+        with Session(self._engine) as session:
+            stmt = delete(Value).where(Value.time == timestamp, Value.value_type_id == valuetype)
+            session.execute(stmt)
+            session.commit()
+
+
+
+    def delete_by_time_to_time(self, start:int, end:int):
+        with Session(self._engine) as session:
+            if start is not None:
+                stmt = delete(Value).where(Value.time >= start, Value.time <= end)
+            session.execute(stmt)
+            session.commit()
+
+    def update_Device_name_by_id(self, id:int, name:str):
+        with Session(self._engine) as session:
+            stmt = update(Device).where(Device.id == id).values(name=name)
+            session.execute(stmt)
+            session.commit()

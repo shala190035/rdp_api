@@ -250,6 +250,17 @@ def read_values_by_device(device_id: Optional[int] = None, device_name: Optional
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@app.get("/get_device_by_id/")
+def update_Device_name_by_id(id:int):
+    global crud
+    try:
+        message = crud.get_device_by_id(id)
+        return message
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+
 @app.post("/location/")
 def create_location(location: ApiTypes.LocationCreate) -> ApiTypes.Location:
     """Endpoint zum Erstellen einer neuen Location.
@@ -287,6 +298,65 @@ def create_value(value_data: ValueCreate):
         crud.add_value(value_time=value_data.value_time, value_type=value_data.value_type_id, 
                        value_value=value_data.value, device_id=value_data.device_id)
         return {"message": "Value added successfully"}
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+        
+@app.post("/delete_value/{id}/", status_code=201)
+def delete_value(id:int):
+    global crud
+    try:
+        message = crud.delete_by_id(id)
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+@app.delete("/delete_value_by_id/")
+def delete_value_by_id(id:int):
+    global crud
+    try:
+        message = crud.delete_by_id_2(id)
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+
+@app.delete("/delete_value_time/")
+def delete_value_time(timestamp:int):
+    global crud
+    try:
+        message = crud.delete_by_time(timestamp)
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+
+@app.delete("/delete_value_time_type/")
+def delete_value_time_type(timestamp:int, valuetype:int):
+    global crud
+    try:
+        message = crud.delete_by_time_type(timestamp,valuetype)
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+@app.delete("/delete_value_time__to_time/")
+def delete_value_time__to_time(start:int, end:int):
+    global crud
+    try:
+        message = crud.delete_by_time_to_time(start,end)
+    except crud.IntegrityError as e:
+        logger.error(f"Integrity Error occurred: {e}")
+        raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
+
+@app.post("/update_Device_name_by_id/")
+def update_Device_name_by_id(id:int, name:str):
+    global crud
+    try:
+        message = crud.update_Device_name_by_id(id,name)
+        changed = crud.get_device_by_id(id)
+        return changed
     except crud.IntegrityError as e:
         logger.error(f"Integrity Error occurred: {e}")
         raise HTTPException(status_code=400, detail="Failed to add value due to a database error.")
